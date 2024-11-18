@@ -1,3 +1,3 @@
 <?php
 
-echo "Hello World ! 🚀";
+require "../src/Views/layout.php";
