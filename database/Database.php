@@ -9,7 +9,7 @@ class Database {
     
     // Configuration de la Base de Données
     private const DB_HOST = '127.0.0.1';
-    private const DB_NAME = 'todo_db';
+    private const DB_NAME = 'todos_db';
     private const DB_USER = 'root';
     private const DB_PASSWORD = '';
     

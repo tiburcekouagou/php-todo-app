@@ -15,5 +15,8 @@
             "email": "kouagoutiburce@gmail.com"
         }
     ],
-    "require": {}
+    "require": {},
+    "scripts": {
+        "migrate": "php migrations/migrate.php"
+    }
 }
