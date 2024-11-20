@@ -1,17 +1,12 @@
 <?php
 namespace Database;
 
+use Dotenv\Dotenv;
 use \PDO;
 use \PDOException;
 
 class Database {
     private static ?PDO $instance = null;
-    
-    // Configuration de la Base de Données
-    private const DB_HOST = '127.0.0.1';
-    private const DB_NAME = 'todos_db';
-    private const DB_USER = 'root';
-    private const DB_PASSWORD = '';
     
     /**
      * Empêcher l'instanciation de la classe
@@ -21,11 +16,21 @@ class Database {
 
     public static function getInstance() {
         if (self::$instance === null) {
+            // charger les variables d'environnement
+            $dotenv = Dotenv::createImmutable(__DIR__ . "/..");
+            $dotenv->load();
+
+            $dbHost = $_ENV["DB_HOST"];
+            $dbName = $_ENV["DB_NAME"];
+            $dbUser = $_ENV["DB_USER"];
+            $dbPassword = $_ENV["DB_PASSWORD"];
+            $dbCharset = $_ENV["DB_CHARSET"];
+            
             try {
                 self::$instance = new PDO(
-                    'mysql:host=' . self::DB_HOST . ';dbname=' . self::DB_NAME . ';charset=utf8mb4',
-                    self::DB_USER,
-                    self::DB_PASSWORD,
+                    "mysql:host=$dbHost;dbname=$dbName;charset=$dbCharset",
+                    $dbUser,
+                    $dbPassword,
                     [
                         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
