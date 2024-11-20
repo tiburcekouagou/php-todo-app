@@ -1,25 +1,21 @@
 <?php
 namespace App\Controllers;
 
+use Database\Database;
+
 class TodoController
 {
 
     public function index()
     {
-        // Récupérer les tâches depuis la session
-        if (!isset($_SESSION)) {
-            session_start(); // récupérer la session existente
-        }
+        // Récupérer l'instance de connexion à la BDD 
+        $db = Database::getInstance();
 
-        $todos = $_SESSION["todos"] ?? []; // ?? opérateur de coalescence des nulls
-        // if (isset($_SESSION["todos"])) {
-        //     $todos = $_SESSION["todos"];
-        // } else {
-        //     $todos = [];
-        // }
-
-        // Charger la Vue "Views/index.php"
-        // require __DIR__ . "/../Views/index.php";
+        
+        // Récupérer les tâches depuis la BDD
+        $query = $db->query("SELECT * FROM todos ORDER BY id DESC");
+        $todos = $query->fetchAll();
+        
         require dirname(__DIR__) . "/Views/index.php";
     }
 
@@ -29,19 +25,9 @@ class TodoController
             $task = trim($_POST['task']);
 
             if ($task) {
-                // array_push($_SESSION['todos'], [
-                //     [
-                //         'id' => uniqid("todo_"),
-                //         'task' => $task,
-                //         'done' => false
-                //     ]
-                // ]);
-
-                $_SESSION['todos'][] = [
-                    'id' => uniqid("todo_"),
-                    'task' => $task,
-                    'done' => false
-                ];
+                $db = Database::getInstance();
+                $stmt = $db->prepare("INSERT INTO todos (task, done) VALUES (:task, :done)");
+                $stmt->execute(["task" => $task, "done" => 0]);
             }
 
             header('Location: /');
@@ -56,9 +42,9 @@ class TodoController
     {
         $id = $_GET['id'] ?? null;
         if ($id) {
-            $_SESSION['todos'] = array_filter($_SESSION['todos'], function($todo) use ($id){
-                return $todo['id'] !== $id;
-            });
+            $db = Database::getInstance();
+            $stmt = $db->prepare("DELETE FROM todos WHERE id = :id");
+            $stmt->execute(["id" => $id]);
         }
 
         header('Location: /');
@@ -69,11 +55,9 @@ class TodoController
     {
         $id = $_GET['id'] ?? null;
         if ($id) {
-            foreach($_SESSION['todos'] as &$todo) {
-                if ($todo['id'] === $id) {
-                    $todo['done'] = !$todo['done'];
-                }
-            }
+            $db = Database::getInstance();
+            $stmt = $db->prepare("UPDATE todos SET done = NOT done WHERE id = :id");
+            $stmt->execute(["id" => $id]);
         }
 
         header('Location: /');
