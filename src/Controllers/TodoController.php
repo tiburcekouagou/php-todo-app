@@ -1,20 +1,23 @@
 <?php
 namespace App\Controllers;
 
+use App\Models\Todo;
 use Database\Database;
 
 class TodoController
 {
+    private Todo $todoModel;
+
+    public function __construct() {
+        // Injection du model
+        $this->todoModel = new Todo();
+    }
 
     public function index()
     {
-        // Récupérer l'instance de connexion à la BDD 
-        $db = Database::getInstance();
-
         
         // Récupérer les tâches depuis la BDD
-        $query = $db->query("SELECT * FROM todos ORDER BY id DESC");
-        $todos = $query->fetchAll();
+        $todos = $this->todoModel->getAll();
         
         require dirname(__DIR__) . "/Views/index.php";
     }
@@ -25,9 +28,8 @@ class TodoController
             $task = trim($_POST['task']);
 
             if ($task) {
-                $db = Database::getInstance();
-                $stmt = $db->prepare("INSERT INTO todos (task, done) VALUES (:task, :done)");
-                $stmt->execute(["task" => $task, "done" => 0]);
+                // Utiliser le modèle pour créer une tâche
+                $this->todoModel->create($task);
             }
 
             header('Location: /');
@@ -42,9 +44,8 @@ class TodoController
     {
         $id = $_GET['id'] ?? null;
         if ($id) {
-            $db = Database::getInstance();
-            $stmt = $db->prepare("DELETE FROM todos WHERE id = :id");
-            $stmt->execute(["id" => $id]);
+            // Utiliser le modèle pour supprimer une tâche
+            $this->todoModel->delete((int) $id);
         }
 
         header('Location: /');
@@ -55,9 +56,8 @@ class TodoController
     {
         $id = $_GET['id'] ?? null;
         if ($id) {
-            $db = Database::getInstance();
-            $stmt = $db->prepare("UPDATE todos SET done = NOT done WHERE id = :id");
-            $stmt->execute(["id" => $id]);
+            //
+            $this->todoModel->updateStatus((int) $id, null);
         }
 
         header('Location: /');
