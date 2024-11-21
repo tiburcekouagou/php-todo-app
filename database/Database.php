@@ -1,6 +1,7 @@
 <?php
 namespace DB;
 
+use Dotenv\Dotenv;
 use \PDO;
 use \PDOException;
 class Database
@@ -9,11 +10,6 @@ class Database
 
     public static ?PDO $instanceDb = null;
 
-    // Configuration de la Base De Données
-    private const DB_HOST = "localhost";
-    private const DB_NAME = "todos_db";
-    private const DB_USER = "root";
-    private const DB_PASSWORD = "P@ssWord";
 
     /**
      * Empêche l'instanciation de la classe
@@ -27,13 +23,24 @@ class Database
 
     public static function getInstance()
     {
+        // Charger les variables d'nevironnement
+        $dotenv = Dotenv::createImmutable(dirname(__DIR__));
+        $dotenv->load();
+
+        // Configuration de la Base De Données
+        $dbHost = $_ENV["DB_HOST"];
+        $dbName = $_ENV["DB_NAME"];
+        $dbUser = $_ENV["DB_USER"];
+        $dbPassword = $_ENV["DB_PASSWORD"];
+        $dbCharset = $_ENV["DB_CHARSET"];
+
         // si l'instance est nulle, on la cré
         if (self::$instanceDb === null) {
             try {
                 self::$instanceDb = new PDO(
-                    "mysql:host=" . self::DB_HOST . ";dbname=" . self::DB_NAME . ";charset=utf8mb4",
-                    self::DB_USER,
-                    self::DB_PASSWORD,
+                    "mysql:host=$dbHost;dbname=$dbName;charset=$dbCharset",
+                    $dbUser,
+                    $dbPassword,
                     [
                         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // lever des exeptions quand il y a des erreurs
                         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC // renvoyer les données sous forme de tableau associatif
