@@ -1,22 +1,19 @@
 <?php
 namespace App\Controllers;
 
+use DB\Database;
+
 class TodoController
 {
 
     public function index()
     {
-        // Récupérer les tâches depuis la session
-        if (!isset($_SESSION)) {
-            session_start(); // récupérer la session existente
-        }
+        // Récupérer l'instance de connexion à la BDD
+        $db = Database::getInstance();
 
-        $todos = $_SESSION["todos"] ?? []; // ?? opérateur de coalescence des nulls
-        // if (isset($_SESSION["todos"])) {
-        //     $todos = $_SESSION["todos"];
-        // } else {
-        //     $todos = [];
-        // }
+        // Récupérer les tâches depuis la BDD
+        $query = $db->query("SELECT * FROM todos;"); // prépare la requête
+        $todos = $query->fetchAll(); // retourne le résultat de l'exécution de la requête
 
         // Charger la Vue "Views/index.php"
         // require __DIR__ . "/../Views/index.php";
@@ -29,19 +26,18 @@ class TodoController
             $task = trim($_POST['task']);
 
             if ($task) {
-                // array_push($_SESSION['todos'], [
-                //     [
-                //         'id' => uniqid("todo_"),
-                //         'task' => $task,
-                //         'done' => false
-                //     ]
-                // ]);
+                // Récupérer l'instance de connexion à la BDD
+                $db = Database::getInstance();
+                // Prépare la requête SQL pour insérer une nouvelle tâche dans la table "todos".
+                // Les placeholders `:task` et `:done` sont utilisés pour éviter les injections SQL.
+                // Cela sécurise les données entrés par l'utilisateur.
+                $stmt = $db->prepare("INSERT INTO todos (task, done) VALUES (:task, :done);");
 
-                $_SESSION['todos'][] = [
-                    'id' => uniqid("todo_"),
-                    'task' => $task,
-                    'done' => false
-                ];
+                // Exécute la requête préparée avec les valeurs spécifiques fournies dans un tableau associatif
+                // - `:task` contient la description de la tâche saisie par l'utilisateur
+                // - `:done` est initialisé à 0 (indiquand que la tâche n'est pas encore terminée).
+                $stmt->execute([":task" => $task, ":done" => 0]);
+                // $stmt->execute(["task" => $task, "done" => 0]); // on peut retirer les ":" des placeholders. C'est pareil !
             }
 
             header('Location: /');
@@ -56,9 +52,10 @@ class TodoController
     {
         $id = $_GET['id'] ?? null;
         if ($id) {
-            $_SESSION['todos'] = array_filter($_SESSION['todos'], function($todo) use ($id){
-                return $todo['id'] !== $id;
-            });
+            // Récupérer l'instance de connexion à la BDD
+            $db = Database::getInstance();
+            $stmt = $db->prepare("DELETE FROM todos WHERE id = :id;"); // $stmt pour "prepared statement" en anglais, "requête préparé" en fr donc stmt ==> statement
+            $stmt->execute(["id" => (int) $id]);
         }
 
         header('Location: /');
@@ -69,11 +66,10 @@ class TodoController
     {
         $id = $_GET['id'] ?? null;
         if ($id) {
-            foreach($_SESSION['todos'] as &$todo) {
-                if ($todo['id'] === $id) {
-                    $todo['done'] = !$todo['done'];
-                }
-            }
+            // Récupérer l'instance de connexion à la BDD
+            $db = Database::getInstance();
+            $stmt = $db->prepare("UPDATE todos SET done = NOT done WHERE id = :id");
+            $stmt->execute(["id" => (int) $id]);
         }
 
         header('Location: /');

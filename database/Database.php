@@ -3,7 +3,6 @@ namespace DB;
 
 use \PDO;
 use \PDOException;
-
 class Database
 {
     // Design Pattern: Singleton
@@ -14,8 +13,8 @@ class Database
     private const DB_HOST = "localhost";
     private const DB_NAME = "todos_db";
     private const DB_USER = "root";
-    private const DB_PASSWORD = "";
-    
+    private const DB_PASSWORD = "P@ssWord";
+
     /**
      * Empêche l'instanciation de la classe
      */

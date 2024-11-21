@@ -17,6 +17,7 @@
     ],
     "require": {},
     "scripts": {
-        "dev": "php -S localhost:7777 -t public"
+        "dev": "php -S localhost:7777 -t public",
+        "migrate": "php database/Migrations/migrate.php"
     }
 }
