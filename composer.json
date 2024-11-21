@@ -14,5 +14,8 @@
             "email": "kouagoutiburce@gmail.com"
         }
     ],
-    "require": {}
+    "require": {},
+    "scripts": {
+        "dev": "php -S localhost:7777 -t public"
+    }
 }
